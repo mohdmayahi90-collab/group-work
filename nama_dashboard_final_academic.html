@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحول الرقمي ومؤشرات الأداء - مجموعة نماء</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--red:#b91c1c;--dark:#7f1d1d;--soft:#fee2e2;--bg:#f5f6f8;--text:#1f2937}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,var(--dark),var(--red));color:white;padding:24px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.head{max-width:1450px;margin:auto;display:flex;gap:16px;align-items:center}
+.logo{width:78px;height:78px;border-radius:20px;background:white;color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:24px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+h1{margin:0;font-size:27px}
+.subtitle{margin:6px 0 0;opacity:.95;line-height:1.7}
+.container{max-width:1450px;margin:auto;padding:20px}
+.notice{background:white;border-right:6px solid var(--red);padding:14px;border-radius:14px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,.08);line-height:1.8}
+.controls{background:white;border-radius:18px;padding:15px;margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+select,button,input{font-family:Tahoma;padding:10px 13px;border-radius:10px;border:1px solid #d1d5db}
+button{cursor:pointer;background:var(--red);color:white;border:none;font-weight:bold;transition:.2s}
+button:hover{transform:translateY(-2px);background:var(--dark)}
+.tabs{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:18px}
+.tab{background:white;color:var(--red);box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.tab.active{background:var(--red);color:white}
+.page{display:none;animation:fade .3s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:18px}
+.card{background:white;border-radius:18px;padding:17px;border-top:5px solid var(--red);box-shadow:0 5px 14px rgba(0,0,0,.08);transition:.25s}
+.card:hover{transform:translateY(-4px)}
+.card h3{margin:0 0 8px;font-size:15px;color:#374151}
+.value{font-size:29px;font-weight:bold;color:var(--red)}
+.small{font-size:12.5px;color:#6b7280;margin-top:6px;line-height:1.6}
+.section{background:white;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 5px 14px rgba(0,0,0,.08)}
+.section h2{margin:0 0 14px;color:var(--dark);border-bottom:2px solid #e5e7eb;padding-bottom:9px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.chartbox{background:#fffafa;border:1px solid #f3d1d1;border-radius:15px;padding:12px}
+canvas{max-height:310px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #e5e7eb;padding:10px;text-align:right;font-size:14px;vertical-align:top}
+th{background:var(--soft);color:var(--dark)}
+.badge{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:bold;display:inline-block}
+.green{background:#dcfce7;color:#166534}.yellow{background:#fef9c3;color:#854d0e}.blue{background:#dbeafe;color:#1e40af}
+.progress{background:#f3f4f6;border-radius:999px;overflow:hidden;height:18px}
+.progress div{height:100%;background:linear-gradient(90deg,var(--red),#ef4444);color:white;text-align:center;font-size:11px;line-height:18px}
+.reading{line-height:1.9;background:#fff1f2;border-radius:14px;padding:14px;border-right:5px solid var(--red)}
+footer{text-align:center;color:#6b7280;padding:18px}
+@media print{.controls,.tabs,button{display:none}.page{display:block}.section,.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+<div class="head">
+<div class="logo">نماء</div>
+<div>
+<h1>لوحة التحول الرقمي ومؤشرات الأداء لمجموعة نماء</h1>
+<p class="subtitle">ملخص تنفيذي تفاعلي للأداء المالي، الكهرباء، المياه، الصرف الصحي، الموارد البشرية، ومبادرات التحول الرقمي والحوكمة.</p>
+</div>
+</div>
+</header>
+
+<div class="container">
+<div class="notice">
+تعتمد هذه اللوحة على البيانات التي تم استخراجها من تقارير مجموعة نماء 2021–2024، مع دمج مؤشرات الخطة التشغيلية للتحول الرقمي والحوكمة. القيم الناقصة تظهر «غير متوفر» دون تقدير أو افتراض.
+</div>
+
+<div class="controls">
+<label>السنة</label>
+<select id="yearFilter" onchange="applyFilters()">
+<option value="all">كل السنوات</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option>
+</select>
+<label>القطاع</label>
+<select id="sectorFilter" onchange="goSector()">
+<option value="summary">الملخص التنفيذي</option><option value="financial">مالي</option><option value="electricity">كهرباء</option><option value="water">مياه</option><option value="wastewater">صرف صحي</option><option value="hr">موارد بشرية</option><option value="digital">تحول رقمي</option><option value="vision">رؤية عمان 2040</option>
+</select>
+<button onclick="window.print()">تصدير PDF</button>
+<button onclick="exportCSV()">تصدير Excel</button>
+<button onclick="resetAll()">إعادة الضبط</button>
+</div>
+
+<div class="tabs">
+<button class="tab active" onclick="showPage('summary',this)">الملخص التنفيذي</button>
+<button class="tab" onclick="showPage('plan',this)">الخطة التشغيلية</button>
+<button class="tab" onclick="showPage('financial',this)">مالي</button>
+<button class="tab" onclick="showPage('electricity',this)">كهرباء</button>
+<button class="tab" onclick="showPage('water',this)">مياه</button>
+<button class="tab" onclick="showPage('wastewater',this)">صرف صحي</button>
+<button class="tab" onclick="showPage('hr',this)">موارد بشرية</button>
+<button class="tab" onclick="showPage('digital',this)">تحول رقمي</button>
+<button class="tab" onclick="showPage('vision',this)">رؤية عمان 2040</button>
+</div>
+
+<section id="summary" class="page active">
+<div class="kpis" id="summaryCards"></div>
+<div class="section">
+<h2>مقارنة الإيرادات والمصروفات</h2>
+<div class="charts"><div class="chartbox"><canvas id="financeChart"></canvas></div><div class="chartbox"><canvas id="lossChart"></canvas></div></div>
+</div>
+<div class="section reading">
+<h2>قراءة تنفيذية مختصرة</h2>
+تعرض لوحة التحكم مؤشرات الأداء المالية والتشغيلية ومؤشرات التحول الرقمي والحوكمة الواردة في التقارير السنوية والخطة التشغيلية لمجموعة نماء، بهدف دعم المتابعة واتخاذ القرار وتحسين التكامل بين البيانات والأنظمة المؤسسية.
+</div>
+</section>
+
+<section id="plan" class="page">
+<div class="section"><h2>متابعة الخطة التشغيلية للتحول الرقمي والحوكمة</h2>
+<table id="planTable"><thead><tr><th>الهدف التشغيلي</th><th>النشاط التنفيذي</th><th>الدائرة المسؤولة</th><th>المدة</th><th>مؤشر الأداء</th></tr></thead>
+<tbody>
+<tr><td>تعزيز تكامل الأنظمة الرقمية</td><td>ربط Oracle EBS وOrion وEDRMS بمنصة موحدة لتبادل البيانات</td><td>تقنية المعلومات</td><td>6 إلى 8 أشهر</td><td>نسبة تكامل الأنظمة 90%</td></tr>
+<tr><td>تطوير حوكمة البيانات</td><td>إعداد سياسة موحدة لإدارة البيانات وجودتها وتصنيفها</td><td>إدارة التحول الرقمي</td><td>2 إلى 4 أشهر</td><td>اعتماد سياسة الحوكمة</td></tr>
+<tr><td>تحسين الخدمات الرقمية للمشتركين</td><td>إضافة خدمات جديدة عبر التطبيق الذكي والبوابة الإلكترونية</td><td>تقنية المعلومات وخدمة العملاء</td><td>12 شهر</td><td>زيادة الخدمات الرقمية 30%</td></tr>
+<tr><td>الاستفادة من البيانات الضخمة</td><td>إنشاء مستودع بيانات مؤسسي ومنصة ذكاء أعمال لتحليل البيانات ودعم اتخاذ القرار</td><td>تقنية المعلومات وإدارة التخطيط</td><td>6 إلى 8 أشهر</td><td>عدد التقارير التحليلية المنفذة</td></tr>
+<tr><td>تعزيز الأمن السيبراني</td><td>تنفيذ اختبارات دورية وتحديث ضوابط الأمن المعلوماتي</td><td>أمن المعلومات</td><td>متواصل</td><td>انخفاض الحوادث الأمنية</td></tr>
+<tr><td>رفع كفاءة العدادات الذكية</td><td>توسيع نطاق العدادات الذكية وتحليل بيانات الاستهلاك</td><td>قطاعا الكهرباء والمياه</td><td>12 إلى 18 شهر</td><td>زيادة نسبة العدادات الذكية</td></tr>
+<tr><td>التحول إلى بيئة عمل رقمية متكاملة</td><td>التوسع في استخدام Microsoft 365 وأتمتة الإجراءات الداخلية</td><td>الموارد البشرية وتقنية المعلومات</td><td>12 شهر</td><td>تقليل المعاملات الورقية</td></tr>
+<tr><td>بناء القدرات الرقمية</td><td>تنفيذ برامج تدريبية للموظفين في التحول الرقمي وتحليل البيانات</td><td>الموارد البشرية</td><td>سنوية</td><td>عدد فرص التدريب للموظفين</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="financial" class="page"><div class="section"><h2>الأداء المالي</h2><div class="charts"><div class="chartbox"><canvas id="capexChart"></canvas></div><div class="chartbox"><canvas id="profitChart"></canvas></div></div></div></section>
+<section id="electricity" class="page"><div class="section"><h2>قطاع الكهرباء</h2><div class="charts"><div class="chartbox"><canvas id="electricityChart"></canvas></div><div class="chartbox"><canvas id="electricityLossChart"></canvas></div></div></div></section>
+<section id="water" class="page"><div class="section"><h2>قطاع المياه</h2><div class="charts"><div class="chartbox"><canvas id="waterChart"></canvas></div><div class="chartbox"><canvas id="waterLossChart"></canvas></div></div></div></section>
+<section id="wastewater" class="page"><div class="section"><h2>قطاع الصرف الصحي</h2><div class="charts"><div class="chartbox"><canvas id="wasteChart"></canvas></div></div></div></section>
+<section id="hr" class="page"><div class="section"><h2>الموارد البشرية</h2><table><thead><tr><th>السنة</th><th>عدد الموظفين العمانيين</th><th>إجمالي الموظفين</th><th>نسبة التعمين</th></tr></thead><tbody id="hrTable"></tbody></table></div></section>
+<section id="digital" class="page"><div class="section"><h2>مبادرات التحول الرقمي النوعية</h2><table><thead><tr><th>السنة</th><th>المبادرة الرقمية</th><th>ارتباطها بالخطة</th></tr></thead><tbody><tr><td>2023</td><td>تطوير تطبيقات Microsoft Office 365</td><td>بيئة عمل رقمية وتقليل الورق</td></tr><tr><td>2023</td><td>تطوير Oracle EBS وOrion</td><td>تكامل الأنظمة وإدارة البيانات</td></tr><tr><td>2023</td><td>تنفيذ EDRMS</td><td>حوكمة الوثائق والسجلات الإلكترونية</td></tr><tr><td>2023</td><td>تحسين إدارة بيانات العدادات الذكية</td><td>تحليل الاستهلاك ورفع الكفاءة</td></tr><tr><td>2024</td><td>استمرار خدمات تقنية المعلومات عبر نماء للخدمات المشتركة</td><td>دعم الاستدامة الرقمية</td></tr></tbody></table></div></section>
+
+<section id="success" class="page">
+<div class="section"><h2>مؤشرات قياس النجاح</h2><div class="charts"><div class="chartbox"><canvas id="successGauge"></canvas></div></div></div>
+</section>
+
+<section id="vision" class="page"><div class="section"><h2>المواءمة مع رؤية عمان 2040</h2><table><thead><tr><th>محور الرؤية</th><th>مساهمة Dashboard</th></tr></thead><tbody><tr><td>التحول الرقمي</td><td>تطوير الأنظمة وتكامل البيانات ومتابعة الخدمات الرقمية</td></tr><tr><td>الحوكمة والأداء المؤسسي</td><td>مؤشرات الأداء والرقابة الرقمية والشفافية</td></tr><tr><td>الاستدامة</td><td>متابعة الفاقد والعدادات الذكية وكفاءة التشغيل</td></tr><tr><td>جودة الحياة</td><td>تحسين خدمات الكهرباء والمياه والصرف الصحي</td></tr><tr><td>الاقتصاد الرقمي</td><td>توسيع الخدمات الإلكترونية والبيانات والتحليلات</td></tr></tbody></table></div></section>
+
+</div>
+<footer>Dashboard تفاعلية مقترحة لأغراض البحث الأكاديمي</footer>
+
+<script>
+const data={
+  years:['2021','2022','2023','2024'],
+  revenue:[1.412,1.559,1.698,1.957],
+  expenses:[1.272,1.490,1.590,1.562],
+  profit:[-40.497,-170.799,-1956.301,null],
+  capex:[434.8,676.3,349.4,495.5],
+  elecSubs:[1359738,1393186,1449485,null],
+  elecSold:[35674,36452,38711,42156],
+  elecLoss:[9.27,8.6,8.6,8.2],
+  waterSubs:[666987,812694,807526,831637],
+  waterSold:[245.3,228.763,262.709,267.222],
+  waterLoss:[null,null,40.4,37.7],
+  wasteSubs:[188806,253114,281663,289568],
+  wasteSold:[34.527,19.192,42.055,45.334],
+  hrOmani:[2541,5355,null,null],
+  hrTotal:[2654,null,null,null],
+  omanization:[95.74,97.96,null,null]
+};
+let charts=[];
+function filtered(arr){
+ const y=document.getElementById('yearFilter').value;
+ if(y==='all') return arr;
+ const idx=data.years.indexOf(y);
+ return data.years.map((_,i)=>i===idx?arr[i]:null);
+}
+function labels(){
+ const y=document.getElementById('yearFilter').value;
+ return y==='all'?data.years:data.years;
+}
+function destroy(){charts.forEach(c=>c.destroy());charts=[]}
+function makeCharts(){
+ destroy();
+ charts.push(new Chart(document.getElementById('financeChart'),{type:'line',data:{labels:labels(),datasets:[{label:'الإيرادات مليار ر.ع',data:filtered(data.revenue),borderColor:'#b91c1c'},{label:'المصروفات مليار ر.ع',data:filtered(data.expenses),borderColor:'#7f1d1d'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('lossChart'),{type:'bar',data:{labels:['فاقد كهرباء 2023','فاقد كهرباء 2024','فاقد مياه 2023','فاقد مياه 2024'],datasets:[{label:'النسبة %',data:[8.6,8.2,40.4,37.7],backgroundColor:'#b91c1c'}]},options:{responsive:true,scales:{y:{beginAtZero:true}}}}));
+ charts.push(new Chart(document.getElementById('capexChart'),{type:'bar',data:{labels:labels(),datasets:[{label:'مصروفات رأس المال مليون ر.ع',data:filtered(data.capex),backgroundColor:'#b91c1c'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('profitChart'),{type:'bar',data:{labels:labels(),datasets:[{label:'الربح/الخسارة قبل الضريبة مليون ر.ع',data:filtered(data.profit),backgroundColor:'#7f1d1d'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('electricityChart'),{type:'line',data:{labels:labels(),datasets:[{label:'مشتركو الكهرباء',data:filtered(data.elecSubs),borderColor:'#b91c1c'},{label:'الوحدات المباعة جيجاواط ساعة',data:filtered(data.elecSold),borderColor:'#ef4444'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('electricityLossChart'),{type:'bar',data:{labels:labels(),datasets:[{label:'فاقد الكهرباء %',data:filtered(data.elecLoss),backgroundColor:'#b91c1c'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('waterChart'),{type:'line',data:{labels:labels(),datasets:[{label:'مشتركو المياه',data:filtered(data.waterSubs),borderColor:'#b91c1c'},{label:'المياه المباعة مليون م3',data:filtered(data.waterSold),borderColor:'#ef4444'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('waterLossChart'),{type:'bar',data:{labels:labels(),datasets:[{label:'فاقد المياه %',data:filtered(data.waterLoss),backgroundColor:'#b91c1c'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('wasteChart'),{type:'line',data:{labels:labels(),datasets:[{label:'مشتركو الصرف الصحي',data:filtered(data.wasteSubs),borderColor:'#b91c1c'},{label:'الوحدات المباعة مليون م3',data:filtered(data.wasteSold),borderColor:'#ef4444'}]},options:{responsive:true}}));
+ charts.push(new Chart(document.getElementById('successGauge'),{type:'bar',data:{labels:['الخدمات الإلكترونية','تكامل الأنظمة','خفض الورق','رضا المستفيدين','تقليص زمن المعاملات'],datasets:[{label:'المستهدف %',data:[95,90,80,90,40],backgroundColor:'#b91c1c'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100}}}}));
+}
+function updateCards(){
+ const y=document.getElementById('yearFilter').value;
+ const idx=y==='all'?3:data.years.indexOf(y);
+ const val=(arr,suffix='')=>arr[idx]==null?'غير متوفر':arr[idx].toLocaleString('en-US')+suffix;
+ document.getElementById('summaryCards').innerHTML=`
+ <div class="card"><h3>الإيرادات</h3><div class="value">${val(data.revenue,' مليار')}</div><div class="small">${y==='all'?'آخر سنة متاحة 2024':y}</div></div>
+ <div class="card"><h3>المصروفات</h3><div class="value">${val(data.expenses,' مليار')}</div></div>
+ <div class="card"><h3>مشتركو الكهرباء</h3><div class="value">${val(data.elecSubs)}</div></div>
+ <div class="card"><h3>مشتركو المياه</h3><div class="value">${val(data.waterSubs)}</div></div>
+ <div class="card"><h3>مشتركو الصرف الصحي</h3><div class="value">${val(data.wasteSubs)}</div></div>
+ <div class="card"><h3>نسبة التعمين</h3><div class="value">${val(data.omanization,'%')}</div></div>
+ <div class="card"><h3>تكامل الأنظمة</h3><div class="value">90%</div><div class="small">مؤشر الخطة التشغيلية</div></div>
+ <div class="card"><h3>الخدمات الإلكترونية</h3><div class="value">95%</div><div class="small">مؤشر نجاح مقترح</div></div>`;
+ document.getElementById('hrTable').innerHTML=data.years.map((yr,i)=>{
+ if(y!=='all'&&yr!==y) return '';
+ return `<tr><td>${yr}</td><td>${data.hrOmani[i]??'غير متوفر'}</td><td>${data.hrTotal[i]??'غير متوفر'}</td><td>${data.omanization[i]==null?'غير متوفر':data.omanization[i]+'%'}</td></tr>`;
+ }).join('');
+}
+function applyFilters(){updateCards();makeCharts()}
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ if(btn) btn.classList.add('active');
+ setTimeout(()=>{charts.forEach(c=>c.resize())},80);
+}
+function goSector(){
+ const id=document.getElementById('sectorFilter').value;
+ const btn=[...document.querySelectorAll('.tab')].find(b=>b.textContent.includes(document.querySelector(`#sectorFilter option[value="${id}"]`).textContent.trim())) || document.querySelector('.tab');
+ showPage(id,btn);
+}
+function resetAll(){document.getElementById('yearFilter').value='all';document.getElementById('sectorFilter').value='summary';applyFilters();showPage('summary',document.querySelector('.tab'))}
+function exportCSV(){
+ const rows=[['السنة','الإيرادات','المصروفات','مشتركو الكهرباء','مشتركو المياه','مشتركو الصرف الصحي','نسبة التعمين']];
+ data.years.forEach((y,i)=>rows.push([y,data.revenue[i]??'غير متوفر',data.expenses[i]??'غير متوفر',data.elecSubs[i]??'غير متوفر',data.waterSubs[i]??'غير متوفر',data.wasteSubs[i]??'غير متوفر',data.omanization[i]??'غير متوفر']));
+ const csv=rows.map(r=>r.join(',')).join('\n');
+ const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8;'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nama_dashboard_data.csv';a.click();
+}
+document.addEventListener('DOMContentLoaded',()=>{updateCards();makeCharts();});
+</script>
+</body></html>
